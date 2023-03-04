@@ -9,6 +9,20 @@
 		<maven.compiler.source>1.9</maven.compiler.source>
 		<maven.compiler.target>1.9</maven.compiler.target>
 	</properties>
+	<!-- https://mvnrepository.com/artifact/javax.json/javax.json-api -->
+	<dependencies>
+		<dependency>
+			<groupId>javax.json</groupId>
+			<artifactId>javax.json-api</artifactId>
+			<version>1.1.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.glassfish/javax.json -->
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.json</artifactId>
+			<version>1.1.4</version>
+		</dependency>
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>

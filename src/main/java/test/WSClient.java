@@ -1,5 +1,7 @@
 package test;
 
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -7,8 +9,16 @@ import java.net.http.WebSocket.Listener;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonStructure;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 public class WSClient implements WebSocket.Listener {
 	public WSClient() {
@@ -19,7 +29,7 @@ public class WSClient implements WebSocket.Listener {
 		CompletableFuture<WebSocket> cfWS = webSocketBuilder.buildAsync(URI.create("ws://192.168.178.61:8765"), this);
 
 		cfWS.thenRunAsync(this::onCfWSRun); // at good end
-		cfWS.handle(this::handle);	// at bad end
+		cfWS.handle(this::handle); // at bad end
 		try {
 			WebSocket webSocket = cfWS.get();
 			worker(webSocket);
@@ -87,7 +97,36 @@ public class WSClient implements WebSocket.Listener {
 
 	public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
 		System.out.println("onText" + data);
+		convert(data);
+
 		return Listener.super.onText(webSocket, data, last);
 	}
 
+	private void convert(CharSequence data) {
+		String sdata = String.valueOf(data);
+		boolean fail = true;
+		try {
+			JsonReader factory = Json.createReader(new StringReader(sdata));
+			JsonStructure js = factory.read();
+			if (js instanceof JsonObject) {
+				onJsonObject((JsonObject) js);
+				fail = false;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (fail)
+			onNonJsonObject(sdata);
+	}
+
+	private void onNonJsonObject(String sdata) {
+	}
+
+	private void onJsonObject(JsonObject js) {
+		final StringWriter sw = new StringWriter();
+		JsonWriterFactory jwf = Json.createWriterFactory(Map.of(JsonGenerator.PRETTY_PRINTING, ""));
+		jwf.createWriter(sw).writeObject(js);
+		final String s = sw.toString();
+		System.out.println(s);
+	}
 }
