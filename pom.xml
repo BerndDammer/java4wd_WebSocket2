@@ -6,8 +6,10 @@
 	<name>WebSocketTest2</name>
 	<description>WebSocketTest2</description>
 	<properties>
-		<maven.compiler.source>1.9</maven.compiler.source>
-		<maven.compiler.target>1.9</maven.compiler.target>
+		<!--maven.compiler.source>19</maven.compiler.source-->
+		<!--maven.compiler.target>19</maven.compiler.target-->
+		<!--java.version>19</java.version-->
+		<maven.compiler.release>19</maven.compiler.release>
 	</properties>
 	<!-- https://mvnrepository.com/artifact/javax.json/javax.json-api -->
 	<dependencies>
