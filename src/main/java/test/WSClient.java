@@ -25,7 +25,7 @@ public class WSClient implements WebSocket.Listener {
 		HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
 		HttpClient httpClient = httpClientBuilder.build();
 		WebSocket.Builder webSocketBuilder = httpClient.newWebSocketBuilder();
-		webSocketBuilder.connectTimeout(Duration.of(5, ChronoUnit.SECONDS));
+		webSocketBuilder.connectTimeout(Duration.of(3, ChronoUnit.SECONDS));
 		CompletableFuture<WebSocket> cfWS = webSocketBuilder.buildAsync(URI.create("ws://192.168.178.61:8765"), this);
 
 		cfWS.thenRunAsync(this::onCfWSRun); // at good end
