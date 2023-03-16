@@ -17,6 +17,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonStructure;
+import javax.json.JsonValue;
 import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 
@@ -51,7 +52,7 @@ public class WSClient implements WebSocket.Listener {
 		System.out.println("Worker Start");
 		try {
 			while (true) {
-				webSocket.sendText("Message from PC" + i, true);
+				webSocket.sendText(makeCommandMessage(), true);
 				i++;
 				Thread.sleep(2000);
 			}
@@ -127,6 +128,21 @@ public class WSClient implements WebSocket.Listener {
 		JsonWriterFactory jwf = Json.createWriterFactory(Map.of(JsonGenerator.PRETTY_PRINTING, ""));
 		jwf.createWriter(sw).writeObject(js);
 		final String s = sw.toString();
-		System.out.println(s);
+		// System.out.println(s);
+	}
+
+	private String makeCommandMessage() {
+		StringWriter sw = new StringWriter();
+		JsonObject object = Json.createObjectBuilder() //
+				//.add("", JsonValue.NULL) // ?
+				.add("", 20) // ?
+				.add("A", 15) // speed
+				.add("K", "forward") // direction
+				.add("G", JsonValue.TRUE) // lights
+				.add("H", 200) // illumination strength
+				.build();
+		Json.createWriter(sw).writeObject(object);
+		System.out.println("------------" + sw.toString() + "------");
+		return sw.toString();
 	}
 }
