@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>WebSocket</groupId>
 	<artifactId>WebSocketTest2</artifactId>
@@ -6,23 +8,42 @@
 	<name>WebSocketTest2</name>
 	<description>WebSocketTest2</description>
 	<properties>
-		<!--maven.compiler.source>19</maven.compiler.source-->
-		<!--maven.compiler.target>19</maven.compiler.target-->
+		<maven.compiler.source>19</maven.compiler.source>
+		<maven.compiler.target>19</maven.compiler.target>
 		<!--java.version>19</java.version-->
 		<maven.compiler.release>19</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	<!-- https://mvnrepository.com/artifact/javax.json/javax.json-api -->
 	<dependencies>
-		<!--dependency>
-			<groupId>javax.json</groupId>
-			<artifactId>javax.json-api</artifactId>
-			<version>1.1.4</version>
-		</dependency-->
 		<!-- https://mvnrepository.com/artifact/org.glassfish/javax.json -->
 		<dependency>
 			<groupId>org.glassfish</groupId>
 			<artifactId>javax.json</artifactId>
 			<version>1.1.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-base -->
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-base</artifactId>
+			<version>19.0.2.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-controls -->
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<version>19.0.2.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-graphics -->
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<version>19.0.2.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-maven-plugin -->
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-maven-plugin</artifactId>
+			<version>0.0.8</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -43,7 +64,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>test.Entry</mainClass>
+							<mainClass>tools4wd.FXStarter</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
