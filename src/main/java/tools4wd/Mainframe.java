@@ -1,12 +1,17 @@
 package tools4wd;
 
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.json.JsonObjectBuilder;
 
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.GridPane;
@@ -48,6 +53,11 @@ public class Mainframe extends GridPane {
 
 	private final List<IControlSource> js = new LinkedList<>();
 	private final TransmittLogger transmittLogger = new TransmittLogger();
+	private final RecieveLogger recieveLogger = new RecieveLogger();
+	// TODO: Thread safety
+	private final BlockingQueue<String> downlink = new LinkedBlockingQueue<>();
+	private final WebsocketService websocketService = new WebsocketService(downlink);
+	private final Label workermessage = new Label("ffioewihwohfewoi");
 
 	public Mainframe() {
 		final DirectionSelector directionSelector = new DirectionSelector();
@@ -56,9 +66,9 @@ public class Mainframe extends GridPane {
 		final HScroller illumination = new HScroller("H");
 
 		add(directionSelector, 3, 2);
-
+		add(workermessage, 1, 2);
 		add(transmittLogger, 3, 3, 1, 2);
-		add(new RecieveLogger(), 1, 4, 1, GridPane.REMAINING);
+		add(recieveLogger, 1, 4, 1, GridPane.REMAINING);
 		new TransmittWorker(transmittLogger, js);
 		add(lightSwitch, 1, 1);
 		add(acceleration, 2, 1);
@@ -68,5 +78,14 @@ public class Mainframe extends GridPane {
 		js.add(directionSelector);
 		js.add(lightSwitch);
 		js.add(illumination);
+
+		websocketService.setUri(URI.create("ws://192.168.178.61:8765"));
+		websocketService.valueProperty().addListener(this::newObjectFromServer);
+		workermessage.textProperty().bind(websocketService.messageProperty());
+		websocketService.start();
+	}
+
+	void newObjectFromServer(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+		recieveLogger.next(newValue);
 	}
 }

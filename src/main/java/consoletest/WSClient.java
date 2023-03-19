@@ -1,4 +1,4 @@
-package tools4wd;
+package consoletest;
 
 import java.io.StringReader;
 import java.io.StringWriter;

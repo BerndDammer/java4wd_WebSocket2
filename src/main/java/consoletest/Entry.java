@@ -1,4 +1,4 @@
-package tools4wd;
+package consoletest;
 
 public class Entry {
 
