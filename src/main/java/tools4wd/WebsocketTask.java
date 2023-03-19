@@ -3,6 +3,8 @@ package tools4wd;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.net.http.WebSocket.Listener;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.BlockingQueue;
@@ -24,8 +26,7 @@ public class WebsocketTask extends Task<String> implements WebSocket.Listener {
 
 	@Override
 	protected String call() throws Exception {
-		try
-		{
+		try {
 			updateMessage("Starting ....");
 			HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
 			HttpClient httpClient = httpClientBuilder.build();
@@ -46,9 +47,7 @@ public class WebsocketTask extends Task<String> implements WebSocket.Listener {
 
 			updateMessage("Bye bye ...");
 			return null;
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			updateMessage(e.getMessage());
 			throw e;
 		}
@@ -69,6 +68,51 @@ public class WebsocketTask extends Task<String> implements WebSocket.Listener {
 		updateMessage("Index " + counter);
 		counter++;
 		updateValue(data.toString());
-		return null;
+		// standard implementation
+		webSocket.request(1); // must request next block
+		return null; // data is free
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////
+	///
+	/// all other events
+	/// added for information
+	@Override
+	public CompletionStage<?> onBinary(WebSocket webSocket, ByteBuffer data, boolean last) {
+		updateMessage("onBinary");
+		webSocket.request(1);
+		return null; // Byte Buffer is free
+	}
+
+	@Override
+	public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+		updateMessage("onClose: reason : " + reason);
+		return null; // Close immediately
+	}
+
+	@Override
+	public void onError(WebSocket webSocket, Throwable error) {
+		updateMessage("onError  Message :  " + error.getMessage());
+		Listener.super.onError(webSocket, error);
+	}
+
+	@Override
+	public void onOpen(WebSocket webSocket) {
+		updateMessage("onOpen");
+		Listener.super.onOpen(webSocket); // this makes WebSocket.request(1)
+	}
+
+	@Override
+	public CompletionStage<?> onPing(WebSocket webSocket, ByteBuffer message) {
+		updateMessage("onPing");
+		//webSocket.request(1);
+		return Listener.super.onPing(webSocket, message); // make Pong
+	}
+
+	@Override
+	public CompletionStage<?> onPong(WebSocket webSocket, ByteBuffer message) {
+		updateMessage("onPong");
+		webSocket.request(1);
+		return null; // byte buffer is free
 	}
 }

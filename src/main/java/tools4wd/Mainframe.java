@@ -9,6 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.json.JsonObjectBuilder;
 
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker.State;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Label;
@@ -58,6 +59,7 @@ public class Mainframe extends GridPane {
 	private final BlockingQueue<String> downlink = new LinkedBlockingQueue<>();
 	private final WebsocketService websocketService = new WebsocketService(downlink);
 	private final Label workermessage = new Label("ffioewihwohfewoi");
+	private final Label workerstate = new Label();
 
 	public Mainframe() {
 		final DirectionSelector directionSelector = new DirectionSelector();
@@ -67,8 +69,9 @@ public class Mainframe extends GridPane {
 
 		add(directionSelector, 3, 2);
 		add(workermessage, 1, 2);
+		add(workerstate, 1, 3);
 		add(transmittLogger, 3, 3, 1, 2);
-		add(recieveLogger, 1, 4, 1, GridPane.REMAINING);
+		add(recieveLogger, 2, 4, 1, GridPane.REMAINING);
 		new TransmittWorker(transmittLogger, js, downlink);
 		add(lightSwitch, 1, 1);
 		add(acceleration, 2, 1);
@@ -82,10 +85,14 @@ public class Mainframe extends GridPane {
 		websocketService.setUri(URI.create("ws://192.168.178.61:8765"));
 		websocketService.valueProperty().addListener(this::newObjectFromServer);
 		workermessage.textProperty().bind(websocketService.messageProperty());
+		websocketService.stateProperty().addListener(this::newWorkerState);
 		websocketService.start();
 	}
 
 	void newObjectFromServer(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 		recieveLogger.next(newValue);
+	}
+	void newWorkerState(ObservableValue<? extends State> observable, State oldValue, State newValue) {
+		workerstate.setText(newValue.toString());
 	}
 }

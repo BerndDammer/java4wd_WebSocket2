@@ -28,6 +28,7 @@ public class TransmittWorker {
 		this.downlink = downlink;
 
 		timeline.setCycleCount(Animation.INDEFINITE);
+		//timeline.setCycleCount(5);
 		timeline.getKeyFrames().add(new KeyFrame(General.COMMAND_DELAY_MS, this::onKeyFrame));
 		timeline.play();
 		// TODO Auto-generated constructor stub
