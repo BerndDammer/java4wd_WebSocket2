@@ -1,8 +1,8 @@
 package tools4wd;
 
-import java.io.StringWriter;
+import java.io.IOException;
+import java.nio.channels.Pipe;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -13,16 +13,19 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
+import tools.ByteBufferOutputStream;
 
 public class TransmittWorker {
 
 	private final Timeline timeline = new Timeline();
 
-	private final TransmittLogger tTransmittLoggerl;
+	private final SLogger tTransmittLoggerl;
 	private final List<IControlSource> js;
-	private final BlockingQueue<String> downlink;
+	private final Pipe.SinkChannel downlink;
+	final ByteBufferOutputStream bbaos =new ByteBufferOutputStream(General.BUFFER_SIZE);
 
-	public TransmittWorker(TransmittLogger transmittLogger, List<IControlSource> js, BlockingQueue<String> downlink) {
+
+	public TransmittWorker(SLogger transmittLogger, List<IControlSource> js, Pipe.SinkChannel downlink) {
 		this.js = js;
 		this.tTransmittLoggerl = transmittLogger;
 		this.downlink = downlink;
@@ -41,9 +44,15 @@ public class TransmittWorker {
 			ic.add2JSon(ob);
 		}
 		final JsonObject job = ob.build();
-		final StringWriter sw = new StringWriter();
-		Json.createWriter(sw).writeObject(job);
-		tTransmittLoggerl.next(sw.toString());
-		downlink.add(sw.toString());
+		bbaos.getBb().clear();
+		Json.createWriter(bbaos).writeObject(job);
+		bbaos.getBb().flip();
+		tTransmittLoggerl.next(bbaos.toString());
+		try {
+			// TODO one in one out ????
+			downlink.write(bbaos.getBb());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -5,52 +5,66 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.net.http.WebSocket.Listener;
 import java.nio.ByteBuffer;
+import java.nio.channels.Pipe;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.concurrent.BlockingQueue;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import javafx.concurrent.Task;
+import tools.ByteBufferCharSequence;
 
 public class WebsocketTask extends Task<String> implements WebSocket.Listener {
 
-	private final BlockingQueue<String> downlink;
+	private final Pipe.SourceChannel downlink;
 	private final URI uri;
 	private int counter = 0;
 
-	public WebsocketTask(BlockingQueue<String> downlink, URI uri) {
+	public WebsocketTask(Pipe.SourceChannel downlink, URI uri) {
 		this.downlink = downlink;
 		this.uri = uri;
 	}
 
 	@Override
 	protected String call() throws Exception {
-		try {
-			updateMessage("Starting ....");
-			HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
-			HttpClient httpClient = httpClientBuilder.build();
-			WebSocket.Builder webSocketBuilder = httpClient.newWebSocketBuilder();
-			webSocketBuilder.connectTimeout(Duration.of(3, ChronoUnit.SECONDS));
-			CompletableFuture<WebSocket> cfWS = webSocketBuilder.buildAsync(uri, this);
+		updateMessage("Starting ....");
+		final ByteBuffer byteBuffer = ByteBuffer.allocate(General.BUFFER_SIZE);
+		final HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+		final HttpClient httpClient = httpClientBuilder.build();
+		final WebSocket.Builder webSocketBuilder = httpClient.newWebSocketBuilder();
+		webSocketBuilder.connectTimeout(Duration.ofSeconds(3l));
+		final CompletableFuture<WebSocket> cfWS = webSocketBuilder.buildAsync(uri, this);
 
-			cfWS.thenRun(this::onCfWSRun); // at good end
-			cfWS.exceptionally(this::handleError); // at bad end
+		cfWS.thenRun(this::onCfWSRun); // at good end
+		cfWS.exceptionally(this::handleError); // at bad end
 
-			WebSocket webSocket = cfWS.get();
-			updateMessage("Init done ... Start loop ...");
+		final WebSocket webSocket = cfWS.get();
+		updateMessage("Init done ... Start loop ...");
 
-			while (!isCancelled()) {
-				String s = downlink.take();
-				webSocket.sendText(s, true);
+		final Selector selector = Selector.open();
+		downlink.configureBlocking(false);
+		final SelectionKey readKey = downlink.register(selector, SelectionKey.OP_READ);
+		
+		while (!isCancelled()) {
+			selector.select(333);
+			Set<SelectionKey> selectedKeys = selector.selectedKeys();
+			for( SelectionKey sk : selectedKeys)
+			{
+				if (sk.isReadable()) {
+					byteBuffer.clear();
+					downlink.read(byteBuffer);
+					byteBuffer.flip();
+					//String s = 
+					webSocket.sendText( new ByteBufferCharSequence(byteBuffer), true);
+				}
 			}
-
-			updateMessage("Bye bye ...");
-			return null;
-		} catch (Exception e) {
-			updateMessage(e.getMessage());
-			throw e;
 		}
+		readKey.cancel();
+		selector.close();
+		updateMessage("Bye bye ...");
+		return null;
 	}
 
 	private void onCfWSRun() {
@@ -58,8 +72,8 @@ public class WebsocketTask extends Task<String> implements WebSocket.Listener {
 	}
 
 	private WebSocket handleError(Throwable t) {
-		updateMessage("Start failed ....");
-		cancel();
+		updateMessage("Start failed .... : " + t.getMessage());
+		//cancel(); // fail is better
 		return null;
 	}
 
@@ -105,7 +119,7 @@ public class WebsocketTask extends Task<String> implements WebSocket.Listener {
 	@Override
 	public CompletionStage<?> onPing(WebSocket webSocket, ByteBuffer message) {
 		updateMessage("onPing");
-		//webSocket.request(1);
+		// webSocket.request(1);
 		return Listener.super.onPing(webSocket, message); // make Pong
 	}
 

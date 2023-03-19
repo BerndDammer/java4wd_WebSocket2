@@ -1,11 +1,13 @@
 package tools4wd;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class FXMainApp extends Application {
-    public void start(Stage stage) {
+    public void start(Stage stage) throws IOException {
         Scene scene = new Scene( new Mainframe(), 400, 300);
 
         stage.setTitle("4WD Controller");

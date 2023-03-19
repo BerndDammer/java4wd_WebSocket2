@@ -1,10 +1,10 @@
 package tools4wd;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.channels.Pipe;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.json.JsonObjectBuilder;
 
@@ -53,15 +53,17 @@ public class Mainframe extends GridPane {
 	}
 
 	private final List<IControlSource> js = new LinkedList<>();
-	private final TransmittLogger transmittLogger = new TransmittLogger();
-	private final RecieveLogger recieveLogger = new RecieveLogger();
-	// TODO: Thread safety
-	private final BlockingQueue<String> downlink = new LinkedBlockingQueue<>();
-	private final WebsocketService websocketService = new WebsocketService(downlink);
+	private final SLogger transmittLogger = new SLogger();
+	private final SLogger recieveLogger = new SLogger();
+	private final Pipe downlink;
+	private final WebsocketService websocketService;
 	private final Label workermessage = new Label("ffioewihwohfewoi");
 	private final Label workerstate = new Label();
 
-	public Mainframe() {
+	public Mainframe() throws IOException {
+		downlink = Pipe.open();
+		websocketService = new WebsocketService(downlink.source());
+
 		final DirectionSelector directionSelector = new DirectionSelector();
 		final LightSwitch lightSwitch = new LightSwitch();
 		final HScroller acceleration = new HScroller("A");
@@ -72,7 +74,7 @@ public class Mainframe extends GridPane {
 		add(workerstate, 1, 3);
 		add(transmittLogger, 3, 3, 1, 2);
 		add(recieveLogger, 2, 4, 1, GridPane.REMAINING);
-		new TransmittWorker(transmittLogger, js, downlink);
+		new TransmittWorker(transmittLogger, js, downlink.sink());
 		add(lightSwitch, 1, 1);
 		add(acceleration, 2, 1);
 		add(illumination, 3, 1);
@@ -92,6 +94,7 @@ public class Mainframe extends GridPane {
 	void newObjectFromServer(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 		recieveLogger.next(newValue);
 	}
+
 	void newWorkerState(ObservableValue<? extends State> observable, State oldValue, State newValue) {
 		workerstate.setText(newValue.toString());
 	}
