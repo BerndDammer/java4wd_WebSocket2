@@ -69,7 +69,7 @@ public class Mainframe extends GridPane {
 		add(workermessage, 1, 2);
 		add(transmittLogger, 3, 3, 1, 2);
 		add(recieveLogger, 1, 4, 1, GridPane.REMAINING);
-		new TransmittWorker(transmittLogger, js);
+		new TransmittWorker(transmittLogger, js, downlink);
 		add(lightSwitch, 1, 1);
 		add(acceleration, 2, 1);
 		add(illumination, 3, 1);

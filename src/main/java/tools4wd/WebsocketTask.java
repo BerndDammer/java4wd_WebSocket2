@@ -24,26 +24,34 @@ public class WebsocketTask extends Task<String> implements WebSocket.Listener {
 
 	@Override
 	protected String call() throws Exception {
-		updateMessage("Starting ....");
-		HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
-		HttpClient httpClient = httpClientBuilder.build();
-		WebSocket.Builder webSocketBuilder = httpClient.newWebSocketBuilder();
-		webSocketBuilder.connectTimeout(Duration.of(3, ChronoUnit.SECONDS));
-		CompletableFuture<WebSocket> cfWS = webSocketBuilder.buildAsync(uri, this);
+		try
+		{
+			updateMessage("Starting ....");
+			HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+			HttpClient httpClient = httpClientBuilder.build();
+			WebSocket.Builder webSocketBuilder = httpClient.newWebSocketBuilder();
+			webSocketBuilder.connectTimeout(Duration.of(3, ChronoUnit.SECONDS));
+			CompletableFuture<WebSocket> cfWS = webSocketBuilder.buildAsync(uri, this);
 
-		cfWS.thenRun(this::onCfWSRun); // at good end
-		cfWS.exceptionally(this::handleError); // at bad end
+			cfWS.thenRun(this::onCfWSRun); // at good end
+			cfWS.exceptionally(this::handleError); // at bad end
 
-		WebSocket webSocket = cfWS.get();
-		updateMessage("Init done ... Start loop ...");
+			WebSocket webSocket = cfWS.get();
+			updateMessage("Init done ... Start loop ...");
 
-		while (!isCancelled()) {
-			String s = downlink.take();
-			webSocket.sendText(s, true);
+			while (!isCancelled()) {
+				String s = downlink.take();
+				webSocket.sendText(s, true);
+			}
+
+			updateMessage("Bye bye ...");
+			return null;
 		}
-
-		updateMessage("Bye bye ...");
-		return null;
+		catch(Exception e)
+		{
+			updateMessage(e.getMessage());
+			throw e;
+		}
 	}
 
 	private void onCfWSRun() {
