@@ -63,6 +63,7 @@ public class WebsocketTask extends Task<String> implements WebSocket.Listener {
 		}
 		readKey.cancel();
 		selector.close();
+		webSocket.abort();
 		updateMessage("Bye bye ...");
 		return null;
 	}
