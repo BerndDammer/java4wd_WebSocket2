@@ -1,12 +1,17 @@
 package tools4wd;
 
+import java.io.StringReader;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonNumber;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.json.JsonStructure;
 
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker.State;
@@ -16,6 +21,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
@@ -99,6 +105,13 @@ public class Mainframe extends GridPane {
 	private final TransmittWorker transmittWorker;
 	private final ChoiceBox<Duration> transmitSpeed = new ChoiceBox<Duration>(General.SPEEDS);
 
+	// Info from client
+	private final MapListView sonics = new MapListView();
+	private final ProgressBar[] bottomSensors = new ProgressBar[] { //
+			new ProgressBar(), new ProgressBar(), new ProgressBar() };
+	private final Label speed = new Label("XXXXXXXX");
+	private final Label mileage = new Label("WWWWWW");
+
 	public Mainframe() {
 		// setGridLinesVisible(true);
 		transmitSpeed.setValue(General.DEFAULT_SPEED);
@@ -125,8 +138,19 @@ public class Mainframe extends GridPane {
 		add(startButton, 3, 5);
 		add(new StopButton(), 4, 5);
 
-		add(transmittLogger, 1, 6, GridPane.REMAINING, 1);
-		add(recieveLogger, 1, 7, GridPane.REMAINING, 1);
+		add(transmittLogger, 1, 6, 4, 1);
+		add(recieveLogger, 1, 7, 4, 1);
+		{
+			GridPane p = new GridPane();
+			p.add(bottomSensors[0], 1, 1);
+			p.add(bottomSensors[1], 1, 2);
+			p.add(bottomSensors[2], 1, 3);
+
+			add(p, 5, 1, 1, 3);
+		}
+		add(speed, 5, 4);
+		add(mileage, 5, 5);
+		add(sonics, 5, 6, 1, GridPane.REMAINING);
 
 		js.add(acceleration);
 		js.add(directionSelector);
@@ -136,6 +160,23 @@ public class Mainframe extends GridPane {
 
 	void newObjectFromServer(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 		recieveLogger.next(newValue);
+		JsonReader factory = Json.createReader(new StringReader(newValue));
+		JsonStructure js = factory.read();
+		JsonObject job = (JsonObject) js;
+		{
+			JsonArray hs = job.getJsonArray("H");
+			bottomSensors[0].setProgress(((JsonNumber) hs.get(0)).doubleValue() / 32768.0);
+			bottomSensors[1].setProgress(((JsonNumber) hs.get(1)).doubleValue() / 32768.0);
+			bottomSensors[2].setProgress(((JsonNumber) hs.get(2)).doubleValue() / 32768.0);
+		}
+		mileage.setText("Mil: " + job.getInt("C"));
+		speed.setText("Speed: " + job.getInt("B"));
+		{
+			JsonArray hs = job.getJsonArray("D");
+			int k = hs.getInt(0);
+			int v = hs.getInt(1);
+			sonics.getMap().get().put(k, v);
+		}
 	}
 
 	void newWorkerState(ObservableValue<? extends State> observable, State oldValue, State newValue) {
