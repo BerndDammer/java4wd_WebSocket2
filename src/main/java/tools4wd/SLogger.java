@@ -12,7 +12,7 @@ public class SLogger extends ListView<String> {
 	}
 
 	public void next(final String s) {
-		if( getItems().size() > 10)
+		if( getItems().size() > General.LOG_AUTODELETE)
 		{
 			getItems().clear();
 		}

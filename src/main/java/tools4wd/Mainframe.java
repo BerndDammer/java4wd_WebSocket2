@@ -21,6 +21,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
+import todo.CommanderString;
 
 public class Mainframe extends GridPane {
 	private class LightSwitch extends ToggleButton implements EventHandler<javafx.event.ActionEvent>, IControlSource {
@@ -89,7 +90,7 @@ public class Mainframe extends GridPane {
 	private final List<IControlSource> js = new LinkedList<>();
 	private final SLogger transmittLogger = new SLogger();
 	private final SLogger recieveLogger = new SLogger();
-	private final BlockingQueue<String> downlink = new LinkedBlockingQueue<>();
+	private final CommanderString downlink = CommanderString.getCommander();
 	private final WebsocketService websocketService;
 	private final Label workermessage = new Label();
 	private final Label workerstate = new Label();

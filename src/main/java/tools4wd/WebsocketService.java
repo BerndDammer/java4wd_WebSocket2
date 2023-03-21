@@ -1,14 +1,14 @@
 package tools4wd;
 
 import java.net.URI;
-import java.util.concurrent.BlockingQueue;
 
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import todo.CommanderString;
 
 public class WebsocketService extends Service<String> {
 
-	private final BlockingQueue<String> downlink;
+	private final CommanderString downlink;
 	private URI uri;
 
 	public URI getUri() {
@@ -19,7 +19,7 @@ public class WebsocketService extends Service<String> {
 		this.uri = uri;
 	}
 
-	public WebsocketService(BlockingQueue<String> downlink) {
+	public WebsocketService(CommanderString downlink) {
 		this.downlink = downlink;
 	}
 

@@ -17,4 +17,5 @@ public class General {
 			Duration.seconds(15.0)//
 	);
 	public static final int POLLING_DELAY_MS = 150;
+	public static final int LOG_AUTODELETE = 5;
 }

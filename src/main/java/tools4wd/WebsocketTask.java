@@ -6,45 +6,54 @@ import java.net.http.WebSocket;
 import java.net.http.WebSocket.Listener;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javafx.concurrent.Task;
+import todo.CommanderString;
 
 public class WebsocketTask extends Task<String> implements WebSocket.Listener {
 
-	private final BlockingQueue<String> downlink;
+	private final CommanderString downlink;
 	private final URI uri;
 	private int counter = 0;
 
-	public WebsocketTask(BlockingQueue<String> downlink, URI uri) {
+	public WebsocketTask(CommanderString downlink, URI uri) {
 		this.downlink = downlink;
 		this.uri = uri;
 	}
 
 	@Override
 	protected String call() throws Exception {
-		updateMessage("Starting ....");
-		final HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
-		final HttpClient httpClient = httpClientBuilder.build();
-		final WebSocket.Builder webSocketBuilder = httpClient.newWebSocketBuilder();
-		webSocketBuilder.connectTimeout(Duration.ofSeconds(3l));
-		final CompletableFuture<WebSocket> cfWS = webSocketBuilder.buildAsync(uri, this);
+		WebSocket webSocket = null;
+		try {
+			updateMessage("Starting ....");
+			final HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+			final HttpClient httpClient = httpClientBuilder.build();
+			final WebSocket.Builder webSocketBuilder = httpClient.newWebSocketBuilder();
+			webSocketBuilder.connectTimeout(Duration.ofSeconds(3l));
+			final CompletableFuture<WebSocket> cfWS = webSocketBuilder.buildAsync(uri, this);
 
-		cfWS.thenRun(this::onCfWSRun); // at good end
-		cfWS.exceptionally(this::handleError); // at bad end
+			cfWS.thenRun(this::onCfWSRun); // at good end
+			cfWS.exceptionally(this::handleError); // at bad end
 
-		final WebSocket webSocket = cfWS.get();
-		updateMessage("Init done ... Start loop ...");
+			webSocket = cfWS.get();
+			updateMessage("Init done ... Start loop ...");
 
-		while (!isCancelled()) {
-			String s = downlink.take();
-			webSocket.sendText(s, true);
+			while (!isCancelled()) {
+				String s = downlink.get();
+				if (s != null)
+					webSocket.sendText(s, true);
+				// webSocket.request(22);
+			}
 		}
-		webSocket.abort();
-		updateMessage("Bye bye ...");
+		/*
+		 * catch(Exception e) { e.printStackTrace(); throw e; }
+		 */
+		finally {
+			webSocket.abort();
+			updateMessage("Bye bye ...");
+		}
 		return null;
 	}
 

@@ -2,7 +2,6 @@ package tools4wd;
 
 import java.io.StringWriter;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -15,6 +14,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.util.Duration;
+import todo.CommanderString;
 
 public class TransmittWorker {
 
@@ -22,12 +22,9 @@ public class TransmittWorker {
 
 	private final SLogger tTransmittLoggerl;
 	private final List<IControlSource> js;
-	private final BlockingQueue<String> downlink;
+	private final CommanderString downlink;
 
-	// final ByteBufferOutputStream bbaos = new
-	// ByteBufferOutputStream(General.BUFFER_SIZE);
-
-	public TransmittWorker(SLogger transmittLogger, List<IControlSource> js, BlockingQueue<String> downlink) {
+	public TransmittWorker(SLogger transmittLogger, List<IControlSource> js, CommanderString downlink) {
 		this.js = js;
 		this.tTransmittLoggerl = transmittLogger;
 		this.downlink = downlink;
@@ -47,8 +44,7 @@ public class TransmittWorker {
 		final StringWriter sw = new StringWriter();
 		Json.createWriter(sw).writeObject(job);
 		tTransmittLoggerl.next(sw.toString());
-		downlink.add(sw.toString());
-		tTransmittLoggerl.next(sw.toString());
+		downlink.put(sw.toString());
 	}
 
 	public void setEnabled(boolean enable) {
