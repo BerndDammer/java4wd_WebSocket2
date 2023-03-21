@@ -1,10 +1,10 @@
 package tools4wd;
 
-import java.io.IOException;
 import java.net.URI;
-import java.nio.channels.Pipe;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.json.JsonObjectBuilder;
 
@@ -89,7 +89,7 @@ public class Mainframe extends GridPane {
 	private final List<IControlSource> js = new LinkedList<>();
 	private final SLogger transmittLogger = new SLogger();
 	private final SLogger recieveLogger = new SLogger();
-	private final Pipe downlink;
+	private final BlockingQueue<String> downlink = new LinkedBlockingQueue<>();
 	private final WebsocketService websocketService;
 	private final Label workermessage = new Label();
 	private final Label workerstate = new Label();
@@ -98,18 +98,17 @@ public class Mainframe extends GridPane {
 	private final TransmittWorker transmittWorker;
 	private final ChoiceBox<Duration> transmitSpeed = new ChoiceBox<Duration>(General.SPEEDS);
 
-	public Mainframe() throws IOException {
+	public Mainframe() {
 		// setGridLinesVisible(true);
 		transmitSpeed.setValue(General.DEFAULT_SPEED);
 		transmitSpeed.valueProperty().addListener(this::changedSpeed);
-		downlink = Pipe.open();
-		websocketService = new WebsocketService(downlink.source());
+		websocketService = new WebsocketService(downlink);
 
 		final DirectionSelector directionSelector = new DirectionSelector();
 		final LightSwitch lightSwitch = new LightSwitch();
 		final HScroller acceleration = new HScroller("A");
 		final HScroller illumination = new HScroller("H");
-		transmittWorker = new TransmittWorker(transmittLogger, js, downlink.sink());
+		transmittWorker = new TransmittWorker(transmittLogger, js, downlink);
 
 		// colum row
 		add(lightSwitch, 1, 1, 4, 1);

@@ -1,14 +1,14 @@
 package tools4wd;
 
 import java.net.URI;
-import java.nio.channels.Pipe;
+import java.util.concurrent.BlockingQueue;
 
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
 public class WebsocketService extends Service<String> {
 
-	private final Pipe.SourceChannel downlink;
+	private final BlockingQueue<String> downlink;
 	private URI uri;
 
 	public URI getUri() {
@@ -19,7 +19,7 @@ public class WebsocketService extends Service<String> {
 		this.uri = uri;
 	}
 
-	public WebsocketService(Pipe.SourceChannel downlink ) {
+	public WebsocketService(BlockingQueue<String> downlink) {
 		this.downlink = downlink;
 	}
 

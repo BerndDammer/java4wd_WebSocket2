@@ -16,4 +16,5 @@ public class General {
 			Duration.millis(200.0),//
 			Duration.seconds(15.0)//
 	);
+	public static final int POLLING_DELAY_MS = 150;
 }

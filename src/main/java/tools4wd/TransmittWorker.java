@@ -1,8 +1,8 @@
 package tools4wd;
 
-import java.io.IOException;
-import java.nio.channels.Pipe;
+import java.io.StringWriter;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -15,7 +15,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.util.Duration;
-import tools.ByteBufferOutputStream;
 
 public class TransmittWorker {
 
@@ -23,11 +22,12 @@ public class TransmittWorker {
 
 	private final SLogger tTransmittLoggerl;
 	private final List<IControlSource> js;
-	private final Pipe.SinkChannel downlink;
+	private final BlockingQueue<String> downlink;
 
-	final ByteBufferOutputStream bbaos = new ByteBufferOutputStream(General.BUFFER_SIZE);
+	// final ByteBufferOutputStream bbaos = new
+	// ByteBufferOutputStream(General.BUFFER_SIZE);
 
-	public TransmittWorker(SLogger transmittLogger, List<IControlSource> js, Pipe.SinkChannel downlink) {
+	public TransmittWorker(SLogger transmittLogger, List<IControlSource> js, BlockingQueue<String> downlink) {
 		this.js = js;
 		this.tTransmittLoggerl = transmittLogger;
 		this.downlink = downlink;
@@ -43,16 +43,12 @@ public class TransmittWorker {
 			ic.add2JSon(ob);
 		}
 		final JsonObject job = ob.build();
-		bbaos.getBb().clear();
-		Json.createWriter(bbaos).writeObject(job);
-		bbaos.getBb().flip();
-		tTransmittLoggerl.next(bbaos.toString());
-		try {
-			// TODO one in one out ????
-			downlink.write(bbaos.getBb());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+		final StringWriter sw = new StringWriter();
+		Json.createWriter(sw).writeObject(job);
+		tTransmittLoggerl.next(sw.toString());
+		downlink.add(sw.toString());
+		tTransmittLoggerl.next(sw.toString());
 	}
 
 	public void setEnabled(boolean enable) {
@@ -71,10 +67,12 @@ public class TransmittWorker {
 	}
 
 	public void setRate(final Duration time) {
-		boolean running = timeline.getStatus() == Status.RUNNING; 
-		if(running )timeline.stop();
+		boolean running = timeline.getStatus() == Status.RUNNING;
+		if (running)
+			timeline.stop();
 		timeline.getKeyFrames().clear();
 		timeline.getKeyFrames().add(new KeyFrame(time, this::onKeyFrame));
-		if(running )timeline.playFromStart();
+		if (running)
+			timeline.playFromStart();
 	}
 }
