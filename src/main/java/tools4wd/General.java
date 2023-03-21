@@ -13,6 +13,7 @@ public class General {
 			Duration.millis(1000.0), //
 			Duration.millis(500.0), //
 			Duration.millis(333.0), //
-			Duration.millis(200.0)//
+			Duration.millis(200.0),//
+			Duration.seconds(15.0)//
 	);
 }
