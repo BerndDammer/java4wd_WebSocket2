@@ -8,7 +8,8 @@ import javafx.stage.Stage;
 
 public class FXMainApp extends Application {
     public void start(Stage stage) throws IOException {
-        Scene scene = new Scene( new Mainframe(), 800, 600);
+    	final MainframeController mfc = new MainframeController();
+    	Scene scene = new Scene( mfc.getRootNode(), 800, 600);
 
         stage.setTitle("4WD Controller");
         stage.setScene(scene);

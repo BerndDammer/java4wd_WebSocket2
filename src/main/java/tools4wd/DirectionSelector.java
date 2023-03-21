@@ -2,34 +2,50 @@ package tools4wd;
 
 import javax.json.JsonObjectBuilder;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 
-public class DirectionSelector extends GridPane implements IControlSource {
+public class DirectionSelector extends GridPane implements ChangeListener<Boolean> {
 	private final Button bForward = new Button("forward");
 	private final Button bBackward = new Button("backward");
 	private final Button bLeft = new Button("left");
 	private final Button bRight = new Button("right");
+	private final StringProperty directionProperty = new SimpleStringProperty();
+
+	public StringProperty getDirectionProperty() {
+		return directionProperty;
+	}
 
 	public DirectionSelector() {
 		add(bForward, 2, 1);
 		add(bBackward, 2, 3);
 		add(bLeft, 1, 2);
 		add(bRight, 3, 2);
+		directionProperty.set("stop");
+
+		bForward.armedProperty().addListener(this);
+		bBackward.armedProperty().addListener(this);
+		bLeft.armedProperty().addListener(this);
+		bRight.armedProperty().addListener(this);
 	}
 
+
 	@Override
-	public void add2JSon(JsonObjectBuilder job) {
+	public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
 		if (bForward.isArmed()) {
-			job.add("K", "forward");
+			directionProperty.set("forward");
 		} else if (bBackward.isArmed()) {
-			job.add("K", "backward");
+			directionProperty.set("backward");
 		} else if (bLeft.isArmed()) {
-			job.add("K", "left");
+			directionProperty.set("left");
 		} else if (bRight.isArmed()) {
-			job.add("K", "right");
+			directionProperty.set("right");
 		} else {
-			job.add("K", "stop");
+			directionProperty.set("stop");
 		}
 	}
 }
