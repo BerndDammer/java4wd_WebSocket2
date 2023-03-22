@@ -1,7 +1,5 @@
 package tools4wd;
 
-import javax.json.JsonObjectBuilder;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;

@@ -20,8 +20,16 @@ import javafx.concurrent.Worker.State;
 import todo.CommanderString;
 
 public class WebsocketService implements Listener {
+	public interface NonFXThreadEventReciever {
+
+		public void xonNewText();
+
+	}
 
 	private final CommanderString downlink;
+
+	private final BlockingQueue<String> incommingQueue;
+	private final NonFXThreadEventReciever nonFXThreadEventReciever;
 	private URI uri;
 
 	private final StringProperty message = new SimpleStringProperty();
@@ -54,7 +62,10 @@ public class WebsocketService implements Listener {
 		return state;
 	}
 
-	public WebsocketService(CommanderString downlink) {
+	public WebsocketService(CommanderString downlink, BlockingQueue<String> incommingQueue,
+			NonFXThreadEventReciever nonFXThreadEventReciever) {
+		this.incommingQueue = incommingQueue;
+		this.nonFXThreadEventReciever = nonFXThreadEventReciever;
 		this.downlink = downlink;
 		state.setValue(State.READY);
 	}
@@ -121,8 +132,8 @@ public class WebsocketService implements Listener {
 
 	/////////////////////////////////////////////////////////////////////
 	///// internal runner
-	private int counter = 0;
-	private Thread transmitWorker = null;
+	Thread transmitWorker = null;
+	int counter = 0;
 
 	private void call() {
 		WebSocket webSocket = null;
@@ -157,7 +168,7 @@ public class WebsocketService implements Listener {
 		} finally {
 			if (webSocket != null && !webSocket.isInputClosed() && !webSocket.isOutputClosed()) {
 				webSocket.abort();
-				webSocket = null;
+				// webSocket = null;
 			}
 			updateMessage("Bye bye ...");
 		}
@@ -180,7 +191,9 @@ public class WebsocketService implements Listener {
 	public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
 		updateMessage("Index " + counter);
 		counter++;
-		updateValue(data.toString());
+		// updateValue(data.toString());
+		incommingQueue.add(data.toString());
+		nonFXThreadEventReciever.xonNewText();
 		// standard implementation
 		webSocket.request(1); // must request next block
 		return null; // data is free

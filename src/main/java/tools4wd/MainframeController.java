@@ -3,6 +3,8 @@ package tools4wd;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -13,19 +15,25 @@ import javax.json.JsonReader;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
 
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 import todo.CommanderString;
+import tools4wd.WebsocketService.NonFXThreadEventReciever;
 
-public class MainframeController extends MainframeControllerValues {
+public class MainframeController extends MainframeControllerValues implements NonFXThreadEventReciever {
 
+	private final BlockingQueue<String> incommingQueue = new LinkedBlockingQueue<>(20);
+	
+	
 	private final TransmittWorker transmittWorker = new TransmittWorker(this::onTransmitt);
 	private final CommanderString downlink = CommanderString.getCommander();
-	private final WebsocketService websocketService = new WebsocketService(downlink);
+	private final WebsocketService websocketService = new WebsocketService(downlink,incommingQueue, this);
 	private final GridPane rootNode;
+	
 	
 	public MainframeController() {
 		rootNode = new MainframeLoader(this);
@@ -119,5 +127,20 @@ public class MainframeController extends MainframeControllerValues {
 
 	public GridPane getRootNode() {
 		return rootNode;
+	}
+
+	@Override
+	public void xonNewText() {
+		Platform.runLater(this::onNewText);
+	}
+	public void onNewText() {
+		try {
+			String s = incommingQueue.take();
+			onNewObjectFromServer(null, null, s);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 }

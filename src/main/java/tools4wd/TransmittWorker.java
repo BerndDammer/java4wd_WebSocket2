@@ -13,6 +13,7 @@ public class TransmittWorker {
 
 	private final Runnable timed;
 
+	private transient boolean FALSE = false;
 	public TransmittWorker(final Runnable timed) {
 		this.timed = timed;
 		timeline.setCycleCount(Animation.INDEFINITE);
