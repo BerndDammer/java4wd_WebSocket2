@@ -1,4 +1,4 @@
 call ..\..\SetEnv.bat
-rem start git gui
-start %ROOT%bin\git\cmd\gitk.exe
+rem start git gui 
+start %ROOT%bin\git\cmd\gitk.exe --all
 
