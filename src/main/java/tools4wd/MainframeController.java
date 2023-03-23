@@ -23,7 +23,7 @@ import tools4wd.WebsocketStringService.NonFXThreadEventReciever;
 
 public class MainframeController extends MainframeControllerValues implements NonFXThreadEventReciever {
 
-	private final TransmittWorker transmittWorker = new TransmittWorker(this::onTransmitt);
+	private final FXTimer transmittWorker = new FXTimer(this::onTransmitt);
 	private final WebsocketStringService websocketService = new WebsocketStringService(this);
 	private final GridPane rootNode;
 
@@ -41,6 +41,7 @@ public class MainframeController extends MainframeControllerValues implements No
 		websocketService.reset();
 		websocketService.setUri(URI.create(url.getValue()));
 		workermessage.bind(websocketService.messageProperty());
+		workertitle.bind(websocketService.titleProperty());
 		websocketService.stateProperty().addListener(this::onNewWorkerState);
 		websocketService.start();
 	}
@@ -67,7 +68,6 @@ public class MainframeController extends MainframeControllerValues implements No
 	public void onStop(ActionEvent event) {
 		websocketService.cancel();
 	}
-
 
 	void onNewWorkerState(ObservableValue<? extends State> observable, State oldValue, State newValue) {
 
@@ -98,36 +98,37 @@ public class MainframeController extends MainframeControllerValues implements No
 
 	@Override
 	public void xonNewText() {
-		Platform.runLater(this::onNewText);
-	}
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					final String newValue = websocketService.getSourceQueue().take();
 
-	public void onNewText() {
-		try {
-			final String newValue = websocketService.getSourceQueue().take();
+					if (itemsReceiveLogger.get().size() > General.LOG_AUTODELETE)
+						itemsReceiveLogger.get().clear();
+					itemsReceiveLogger.get().add(newValue);
 
-			if (itemsReceiveLogger.get().size() > General.LOG_AUTODELETE)
-				itemsReceiveLogger.get().clear();
-			itemsReceiveLogger.get().add(newValue);
-
-			JsonReader factory = Json.createReader(new StringReader(newValue));
-			JsonStructure js = factory.read();
-			JsonObject job = (JsonObject) js;
-			{
-				JsonArray hs = job.getJsonArray("H");
-				bottomSensors[0].setValue(((JsonNumber) hs.get(0)).doubleValue() / 32768.0);
-				bottomSensors[1].setValue(((JsonNumber) hs.get(1)).doubleValue() / 32768.0);
-				bottomSensors[2].setValue(((JsonNumber) hs.get(2)).doubleValue() / 32768.0);
+					JsonReader factory = Json.createReader(new StringReader(newValue));
+					JsonStructure js = factory.read();
+					JsonObject job = (JsonObject) js;
+					{
+						JsonArray hs = job.getJsonArray("H");
+						bottomSensors[0].setValue(((JsonNumber) hs.get(0)).doubleValue() / 32768.0);
+						bottomSensors[1].setValue(((JsonNumber) hs.get(1)).doubleValue() / 32768.0);
+						bottomSensors[2].setValue(((JsonNumber) hs.get(2)).doubleValue() / 32768.0);
+					}
+					mileage.setValue("Mil: " + job.getInt("C"));
+					speed.setValue("Speed: " + job.getInt("B"));
+					{
+						JsonArray hs = job.getJsonArray("D");
+						int k = hs.getInt(0);
+						int v = hs.getInt(1);
+						sonics.get().put(k, v);
+					}
+				} catch (Exception e) {
+					itemsReceiveLogger.get().add("Json Parsing Problem");
+				}
 			}
-			mileage.setValue("Mil: " + job.getInt("C"));
-			speed.setValue("Speed: " + job.getInt("B"));
-			{
-				JsonArray hs = job.getJsonArray("D");
-				int k = hs.getInt(0);
-				int v = hs.getInt(1);
-				sonics.get().put(k, v);
-			}
-		} catch (Exception e) {
-			itemsReceiveLogger.get().add("Json Parsing Problem");
-		}
+		}); // end of runnable
 	}
 }

@@ -7,6 +7,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 
+// TODO: sudden transmit on change
 public class DirectionSelector extends GridPane implements ChangeListener<Boolean> {
 	private final Button bForward = new Button("forward");
 	private final Button bBackward = new Button("backward");

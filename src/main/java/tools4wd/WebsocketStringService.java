@@ -12,16 +12,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
-public class WebsocketStringService extends Service<WebsocketStringService.DummyResult> {
-	public class DummyResult {
-		// transmitting results by value change does not work
-	}
-
+// TODO add logger
+public class WebsocketStringService extends Service<Void> {
 	public interface NonFXThreadEventReciever {
 		public void xonNewText();
 	}
 
-	public class WebsocketTask extends Task<WebsocketStringService.DummyResult> implements WebSocket.Listener {
+	public class WebsocketTask extends Task<Void> implements WebSocket.Listener {
 
 		private int counter = 0;
 
@@ -29,7 +26,7 @@ public class WebsocketStringService extends Service<WebsocketStringService.Dummy
 		}
 
 		@Override
-		protected WebsocketStringService.DummyResult call() throws Exception {
+		protected Void call() throws Exception {
 			WebSocket webSocket = null;
 			try {
 				updateMessage("Starting ....");
@@ -39,8 +36,8 @@ public class WebsocketStringService extends Service<WebsocketStringService.Dummy
 				webSocketBuilder.connectTimeout(General.CONNECT_TIMEOUT);
 				final CompletableFuture<WebSocket> cfWS = webSocketBuilder.buildAsync(uri, this);
 
-				cfWS.thenRun(this::onCfWSRun); // at good end
-				cfWS.exceptionally(this::handleError); // at bad end
+				cfWS.thenRun(this::futureConnected); // at good end
+				cfWS.exceptionally(this::futureException); // at bad end
 
 				webSocket = cfWS.get();
 				updateMessage("Init done ... Start loop ...");
@@ -62,11 +59,11 @@ public class WebsocketStringService extends Service<WebsocketStringService.Dummy
 			return null;
 		}
 
-		private void onCfWSRun() {
+		private void futureConnected() {
 			updateMessage("Connected");
 		}
 
-		private WebSocket handleError(Throwable t) {
+		private WebSocket futureException(Throwable t) {
 			updateMessage("Start failed .... : " + t.getMessage());
 			// cancel(); // fail is better
 			return null;
@@ -97,19 +94,19 @@ public class WebsocketStringService extends Service<WebsocketStringService.Dummy
 
 		@Override
 		public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-			updateMessage("onClose: reason : " + reason);
+			updateTitle("onClose: reason : " + reason);
 			return null; // Close immediately
 		}
 
 		@Override
 		public void onError(WebSocket webSocket, Throwable error) {
-			updateMessage("onError  Message :  " + error.getMessage());
+			updateTitle("onError  Message :  " + error.getMessage());
 			Listener.super.onError(webSocket, error);
 		}
 
 		@Override
 		public void onOpen(WebSocket webSocket) {
-			updateMessage("onOpen");
+			updateTitle("onOpen : s :  " + webSocket.getSubprotocol());
 			Listener.super.onOpen(webSocket); // this makes WebSocket.request(1)
 		}
 
@@ -150,7 +147,7 @@ public class WebsocketStringService extends Service<WebsocketStringService.Dummy
 	}
 
 	@Override
-	protected Task<WebsocketStringService.DummyResult> createTask() {
+	protected Task<Void> createTask() {
 
 		return new WebsocketTask();
 	}

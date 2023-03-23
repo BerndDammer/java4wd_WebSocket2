@@ -10,10 +10,9 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 
-public class MainframeLoader extends GridPane {
+public class MainframeLoader extends GridPane2 {
 
 	private class HScroller extends Slider {
 
@@ -26,8 +25,9 @@ public class MainframeLoader extends GridPane {
 			setOrientation(Orientation.HORIZONTAL);
 		}
 	}
+
 	public class SLogger extends ListView<String> {
-		
+
 		public SLogger() {
 			setEditable(false);
 		}
@@ -51,38 +51,44 @@ public class MainframeLoader extends GridPane {
 		final SLogger recieveLogger = new SLogger();
 		final TextField url = new TextField(General.URL);
 		final Label workermessage = new Label();
+		final Label workertitle = new Label();
 		final Label workerstate = new Label();
 		final ProgressBar[] bottomSensors = new ProgressBar[] { //
 				new ProgressBar(), new ProgressBar(), new ProgressBar() };
 		final MapListView sonics = new MapListView();
 
 		// colum row
-		add(lightSwitch, 1, 1, 4, 1);
-		add(illumination, 1, 5);
+		add(lightSwitch, 0, 0, 1, 4, INSERTING.CENTER);
+		add(illumination, 0, 4);
 
-		add(directionSelector, 2, 1, 4, 1);
-		add(acceleration, 2, 5);
+		add(directionSelector, 1, 0, 1, 4, INSERTING.CENTER);
+		add(acceleration, 1, 4);
 
-		add(url, 3, 1);
-		add(transmitSpeed, 3, 2, 2, 1);
-		add(workermessage, 3, 3, 2, 1);
-		add(workerstate, 3, 4, 2, 1);
-		add(startButton, 3, 5);
-		add(stopButton, 4, 5);
+		add(url, 2, 0, 2, 1, INSERTING.CENTER);
+		add(transmitSpeed, 2, 1, 2, 1);
 
-		add(transmittLogger, 1, 6, 4, 1);
-		add(recieveLogger, 1, 7, 4, 1);
+		add(workertitle, 2, 2, 2, 1);
+		add(workerstate, 2, 3);
+		add(workermessage, 3, 3);
+
+		add(startButton, 2, 4, INSERTING.CENTER);
+		add(stopButton, 3, 4, INSERTING.CENTER);
+
+		add(recieveLogger, 0, 5, 4, 1);
+		add(transmittLogger, 0, 6, 4, 1);
 		{
-			GridPane p = new GridPane();
-			p.add(bottomSensors[0], 1, 1);
-			p.add(bottomSensors[1], 1, 2);
-			p.add(bottomSensors[2], 1, 3);
-
-			add(p, 5, 1, 1, 3);
+			GridPane2 p = new GridPane2();
+			p.add(bottomSensors[0], 1, 1, INSERTING.HGROW);
+			p.add(bottomSensors[1], 1, 2, INSERTING.HGROW);
+			p.add(bottomSensors[2], 1, 3, INSERTING.HGROW);
+			add(p, 4, 0, 1, 2, INSERTING.CENTER);
+			// p.alignmentProperty().set(Pos.CENTER);
 		}
-		add(speed, 5, 4);
-		add(mileage, 5, 5);
-		add(sonics, 5, 6, 1, GridPane.REMAINING);
+		add(speed, 4, 2, INSERTING.CENTER);
+		add(mileage, 4, 3, INSERTING.CENTER);
+		add(sonics, 4, 5, 1, 2);
+
+		extend();
 
 		///////////////////////////////
 		//// Make Property connections
@@ -102,7 +108,9 @@ public class MainframeLoader extends GridPane {
 				bottomSensors[1].progressProperty(), bottomSensors[2].progressProperty(), };
 		mainframeControllerValues.sonics = sonics.getMap();
 		mainframeControllerValues.workermessage = workermessage.textProperty();
+		mainframeControllerValues.workertitle = workertitle.textProperty();
 		mainframeControllerValues.workerstate = workerstate.textProperty();
 		mainframeControllerValues.direction = directionSelector.getDirectionProperty();
 	}
+
 }

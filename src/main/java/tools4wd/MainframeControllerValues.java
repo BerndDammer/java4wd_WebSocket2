@@ -23,6 +23,7 @@ public class MainframeControllerValues {
 	public StringProperty url;
 	public DoubleProperty acceleration;
 	public StringProperty workermessage;
+	public StringProperty workertitle;
 	public StringProperty workerstate;
 	public DoubleProperty[] bottomSensors;
 	public DoubleProperty illumination;

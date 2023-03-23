@@ -7,20 +7,19 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.util.Duration;
 
-public class TransmittWorker {
+public class FXTimer {
 
 	private final Timeline timeline = new Timeline();
 
 	private final Runnable timed;
 
-	private transient boolean FALSE = false;
-	public TransmittWorker(final Runnable timed) {
+	public FXTimer(final Runnable timed) {
 		this.timed = timed;
 		timeline.setCycleCount(Animation.INDEFINITE);
 		timeline.getKeyFrames().add(new KeyFrame(General.COMMAND_DELAY_MS, this::onKeyFrame));
 	}
 
-	public void onKeyFrame(ActionEvent event) {
+	private void onKeyFrame(ActionEvent event) {
 		timed.run();
 	}
 
