@@ -64,7 +64,7 @@ public class WebsocketStringService extends Service<Void> {
 		}
 
 		private WebSocket futureException(Throwable t) {
-			updateMessage("Start failed .... : " + t.getMessage());
+			updateTitle("Start failed .... : " + t.getMessage());
 			// cancel(); // fail is better
 			return null;
 		}

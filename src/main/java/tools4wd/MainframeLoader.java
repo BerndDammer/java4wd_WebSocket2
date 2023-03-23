@@ -30,11 +30,29 @@ public class MainframeLoader extends GridPane2 {
 
 		public SLogger() {
 			setEditable(false);
+			prefHeight(30.0);
+			prefWidth(60.0);
+			minHeight(20.0);
+		}
+		@Override 
+		protected double computeMinHeight(double width) {
+			return 200.0;
+		}
+		@Override 
+		protected double computePrefHeight(double width) {
+			return computeMinHeight(200.0);
+		}
+		protected double computeMinWidth(double width) {
+			return 750.0;
+		}
+		@Override 
+		protected double computePrefWidth(double width) {
+			return computeMinWidth(750.0);
 		}
 	}
 
 	public MainframeLoader(final MainframeControllerValues mainframeControllerValues) {
-		// setGridLinesVisible(true);
+		super(true);
 		final ChoiceBox<Duration> transmitSpeed = new ChoiceBox<Duration>(General.SPEEDS);
 		transmitSpeed.setValue(General.DEFAULT_SPEED);
 
@@ -69,7 +87,7 @@ public class MainframeLoader extends GridPane2 {
 
 		add(workertitle, 2, 2, 2, 1);
 		add(workerstate, 2, 3);
-		add(workermessage, 3, 3);
+		add(workermessage, 3, 3, 2, 1);
 
 		add(startButton, 2, 4, INSERTING.CENTER);
 		add(stopButton, 3, 4, INSERTING.CENTER);
@@ -77,7 +95,7 @@ public class MainframeLoader extends GridPane2 {
 		add(recieveLogger, 0, 5, 4, 1);
 		add(transmittLogger, 0, 6, 4, 1);
 		{
-			GridPane2 p = new GridPane2();
+			GridPane2 p = new GridPane2(false);
 			p.add(bottomSensors[0], 1, 1, INSERTING.HGROW);
 			p.add(bottomSensors[1], 1, 2, INSERTING.HGROW);
 			p.add(bottomSensors[2], 1, 3, INSERTING.HGROW);
@@ -87,8 +105,8 @@ public class MainframeLoader extends GridPane2 {
 		add(speed, 4, 2, INSERTING.CENTER);
 		add(mileage, 4, 3, INSERTING.CENTER);
 		add(sonics, 4, 5, 1, 2);
-
-		extend();
+		sonics.prefHeight(30.0);
+		sonics.minHeight(30.0);
 
 		///////////////////////////////
 		//// Make Property connections

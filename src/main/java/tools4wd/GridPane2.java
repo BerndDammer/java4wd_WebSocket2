@@ -19,7 +19,10 @@ public class GridPane2 extends GridPane {
 	protected enum INSERTING {
 		HGROW, CENTER, FILL;
 	}
-	
+	protected GridPane2(boolean e)
+	{
+		if(e)extend();
+	}
 	private static final Insets insets = new Insets(1.0);
 
 	protected void add(Node node, int column, int row, INSERTING inserting) {
