@@ -16,6 +16,8 @@ public class General {
 			Duration.millis(200.0),//
 			Duration.seconds(15.0)//
 	);
-	public static final int POLLING_DELAY_MS = 150;
+	//public static final int POLLING_DELAY_MS = 150;
 	public static final int LOG_AUTODELETE = 5;
+	public static final java.time.Duration CONNECT_TIMEOUT = java.time.Duration.ofSeconds(3l);
+	public static final int QUEUE_DEPTH = 20;
 }
